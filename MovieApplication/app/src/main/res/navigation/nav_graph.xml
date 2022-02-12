@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/tvShowsFragment">
+
+    <fragment
+        android:id="@+id/tvShowsFragment"
+        android:name="com.example.movieapplication.ui.TvShowsFragment"
+        android:label="tv_shows_fragment"
+        tools:layout="@layout/tv_shows_fragment" >
+        <action
+            android:id="@+id/action_tvShowsFragment_to_tvShowDetails"
+            app:destination="@id/tvShowDetails" />
+    </fragment>
+    <fragment
+        android:id="@+id/tvShowDetails"
+        android:name="com.example.movieapplication.ui.details.TvShowDetailsFragment"
+        android:label="tv_show_details_fragment"
+        tools:layout="@layout/tv_show_details_fragment" >
+        <action
+            android:id="@+id/action_tvShowDetails_pop_including_tvShowsFragment"
+            app:popUpTo="@id/tvShowsFragment"
+            app:popUpToInclusive="true" />
+        <argument
+            android:name="tvShowItem"
+            app:argType="com.example.movieapplication.model.TvShowItem" />
+    </fragment>
+</navigation>
