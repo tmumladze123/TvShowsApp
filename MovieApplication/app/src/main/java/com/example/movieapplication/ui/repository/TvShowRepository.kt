@@ -1,10 +1,14 @@
 package com.example.movieapplication.ui.repository
 
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import com.example.movieapplication.Resource
 import com.example.movieapplication.model.TvShow
 import com.example.movieapplication.model.TvShowItem
 import com.example.movieapplication.network.TvShowApi
-import kotlinx.coroutines.Dispatchers
+import com.example.movieapplication.paging.TvShowsPagingSource
+import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
@@ -16,27 +20,25 @@ class TvShowRepository @Inject constructor(private var apiService: TvShowApi){
     private var _showLoading = MutableStateFlow(false)
     val showLoading: MutableStateFlow<Boolean> get() = _showLoading
 
-    suspend fun getTvShows(): Flow<Resource<TvShow>> {
-        return flow {
-            emit(handleResponse {
-                apiService.getTvShows()
-            })
-        }.flowOn(Dispatchers.IO)
-    }
     suspend fun getSimilarTvShows(id : String): Flow<Resource<TvShow>> {
         return flow {
             emit(handleResponse {
                 apiService.getSimilarTvs(id)
             })
-        }.flowOn(Dispatchers.IO)
+        }.flowOn(IO)
     }
-    suspend fun getSearchedTvs(query : String): Flow<Resource<TvShow>> {
-        return flow {
-            emit(handleResponse {
-                apiService.getSearchedTvs(query)
-            })
-        }.flowOn(Dispatchers.IO)
+    var searchedData : Flow<PagingData<TvShowItem>>? = null
+
+    fun getPagingSearchedTvs(query : String) {
+        searchedData =  Pager(PagingConfig(pageSize = 1)) {
+                TvShowsPagingSource(apiService, true, query)
+            }.flow
     }
+
+    val Data = Pager(PagingConfig(pageSize = 1)) {
+        TvShowsPagingSource(apiService, false)
+
+    }.flow
 
     private suspend fun <T> handleResponse(apiCall: suspend() -> Response<T>): Resource<T> {
         _showLoading.value = true

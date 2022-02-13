@@ -10,7 +10,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.movieapplication.BaseFragment
 import com.example.movieapplication.databinding.TvShowsFragmentBinding
-import com.example.movieapplication.ui.adapters.TvShowsAdapter
+import com.example.movieapplication.ui.adapters.TvShowsPagingAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -19,14 +19,31 @@ import kotlinx.coroutines.launch
 class TvShowsFragment : BaseFragment<TvShowsFragmentBinding>(TvShowsFragmentBinding :: inflate) {
 
     private val tvShowsViewModel: TvShowsViewModel by viewModels()
-    private lateinit var tvShowsAdapter: TvShowsAdapter
+    private lateinit var tvShowsAdapter: TvShowsPagingAdapter
     override fun start() {
         initRecycler()
         goToDetailsFragment()
-        tvShowsViewModel.getTvShows()
-        observer()
         searchView()
         displayProgressBar()
+        fetchTvShows()
+    }
+    private fun initRecycler(){
+        tvShowsAdapter = TvShowsPagingAdapter()
+        binding.rvTvShow.adapter = tvShowsAdapter
+        binding.rvTvShow.layoutManager = LinearLayoutManager(requireContext())
+    }
+
+    private fun fetchTvShows() {
+        lifecycleScope.launch {
+            tvShowsViewModel.fetchTvShows().collectLatest {
+                tvShowsAdapter.submitData(it)
+            }
+        }
+        lifecycleScope.launch {
+            tvShowsViewModel.searchedTvShows?.collectLatest {
+                tvShowsAdapter.submitData(it)
+            }
+        }
     }
 
 
@@ -62,25 +79,11 @@ class TvShowsFragment : BaseFragment<TvShowsFragmentBinding>(TvShowsFragmentBind
         }
     }
 
-    fun observer(){
-        viewLifecycleOwner.lifecycleScope.launch {
-            tvShowsViewModel.tvShows.collectLatest {
-                tvShowsAdapter.tvShows = it
-            }
-        }
-    }
-
     fun goToDetailsFragment(){
         tvShowsAdapter.onItemClick = { currentItem ->
             val action = TvShowsFragmentDirections.actionTvShowsFragmentToTvShowDetails(currentItem)
             findNavController().navigate(action)
         }
-    }
-
-    private fun initRecycler() {
-        tvShowsAdapter = TvShowsAdapter()
-        binding.rvTvShow.adapter = tvShowsAdapter
-        binding.rvTvShow.layoutManager = LinearLayoutManager(requireContext())
     }
 
 }

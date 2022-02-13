@@ -11,7 +11,10 @@ import retrofit2.http.Query
 
 interface TvShowApi {
     @GET(TV_SHOW_SERVICE)
-    suspend fun getTvShows(): Response<TvShow>
+    suspend fun getTvShows(
+        @Query("page") page :Int = 1,
+        @Query("api_key") api_key :String = APIKEY
+    ): Response<TvShow>
 
     @GET("tv/{tvID}/similar?api_key=9b4d6d06951d3d7549d41ba439c620a4")
     suspend fun getSimilarTvs(
@@ -19,6 +22,7 @@ interface TvShowApi {
     ): Response<TvShow>
     @GET("search/tv")
     suspend fun getSearchedTvs(
+        @Query("page") page :Int,
         @Query("query") query :String,
         @Query("api_key") api_key :String = APIKEY
     ): Response<TvShow>
