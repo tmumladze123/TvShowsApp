@@ -27,16 +27,16 @@ class TvShowRepository @Inject constructor(private var apiService: TvShowApi){
             })
         }.flowOn(IO)
     }
-    var searchedData : Flow<PagingData<TvShowItem>>? = null
 
-    fun getPagingSearchedTvs(query : String) {
-        searchedData =  Pager(PagingConfig(pageSize = 1)) {
+
+    fun getPagingSearchedTvs(query : String): Flow<PagingData<TvShowItem>> {
+        return Pager(PagingConfig(pageSize = 1)) {
                 TvShowsPagingSource(apiService, true, query)
             }.flow
     }
 
-    val Data = Pager(PagingConfig(pageSize = 1)) {
-        TvShowsPagingSource(apiService, false)
+    val data = Pager(PagingConfig(pageSize = 1)) {
+        TvShowsPagingSource(apiService)
 
     }.flow
 

@@ -39,11 +39,6 @@ class TvShowsFragment : BaseFragment<TvShowsFragmentBinding>(TvShowsFragmentBind
                 tvShowsAdapter.submitData(it)
             }
         }
-        lifecycleScope.launch {
-            tvShowsViewModel.searchedTvShows?.collectLatest {
-                tvShowsAdapter.submitData(it)
-            }
-        }
     }
 
 
@@ -66,17 +61,27 @@ class TvShowsFragment : BaseFragment<TvShowsFragmentBinding>(TvShowsFragmentBind
             svTvShow.setOnQueryTextListener(object  : OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String?): Boolean {
                     svTvShow.clearFocus()
-                    tvShowsViewModel.searchByQuery(query)
-                    return false
+                    return sendSearchRequest(query)
                 }
 
                 override fun onQueryTextChange(newText: String?): Boolean {
-                    tvShowsViewModel.searchByQuery(newText)
-                    return false
+                   return sendSearchRequest(newText)
                 }
 
             })
         }
+    }
+    fun sendSearchRequest(text : String?) : Boolean{
+        if(text!=null){
+            lifecycleScope.launch {
+                tvShowsViewModel.searchByQuery(text).collectLatest {
+                    tvShowsAdapter.submitData(it)
+                }
+            }
+        }else {
+            tvShowsViewModel.fetchTvShows()
+        }
+        return false
     }
 
     fun goToDetailsFragment(){

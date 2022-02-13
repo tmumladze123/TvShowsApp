@@ -11,6 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -18,18 +19,22 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TvShowsViewModel  @Inject constructor(private var tvShowService: TvShowRepository): ViewModel() {
-    private var _searchedTvShows : Flow<PagingData<TvShowItem>>? = null
-    val searchedTvShows: Flow<PagingData<TvShowItem>>? get() = _searchedTvShows
 
     private var _showLoadingViewModelState = MutableStateFlow(false)
     val showLoadingViewModel: MutableStateFlow<Boolean> get() = _showLoadingViewModelState
 
-    private var job: Job? = null
 
     fun fetchTvShows(): Flow<PagingData<TvShowItem>> {
-        return tvShowService.Data.cachedIn(viewModelScope)
+        return tvShowService.data.cachedIn(viewModelScope)
     }
 
+    fun searchByQuery(query : String): Flow<PagingData<TvShowItem>> {
+        return if(query.isEmpty()){
+            tvShowService.data.cachedIn(viewModelScope)
+        } else {
+            tvShowService.getPagingSearchedTvs(query).cachedIn(viewModelScope)
+        }
+    }
     fun showLoadingBar() {
         viewModelScope.launch {
             tvShowService.showLoading.collectLatest {
@@ -39,21 +44,5 @@ class TvShowsViewModel  @Inject constructor(private var tvShowService: TvShowRep
     }
 
 
-    fun searchByQuery(query : String?)
-    {
-        if(query!!.isEmpty()){
-            fetchTvShows()
-        } else {
-            job?.cancel()
-            job = viewModelScope.launch {
-                withContext(Dispatchers.IO) {
-                    tvShowService.getPagingSearchedTvs(query)
-                    tvShowService.searchedData?.collectLatest {
-                        _searchedTvShows = tvShowService.searchedData
-                    }
-                    }
-                }
-            }
-    }
 
 }

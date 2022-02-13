@@ -10,7 +10,7 @@ import retrofit2.Response
 
 class TvShowsPagingSource(
     private val apiService: TvShowApi,
-    private val searchData: Boolean,
+    private val searchData: Boolean = false,
     private val query: String = ""
 ) : PagingSource<Int, TvShowItem>() {
 
